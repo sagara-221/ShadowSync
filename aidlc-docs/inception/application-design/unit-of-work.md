@@ -26,7 +26,7 @@
 
 ### 2. データ蓄積システム (Data Accumulation System)
 *   **パス**: `data-accumulation/`
-*   **責任**: IoT Core経由(MQTT想定)で受信したデータの処理・蓄積。Bedrockを用いた非構造化データ（画像・HTML等）からの情報抽出と共通スキーマ変換、およびDynamoDB等への保存。
+*   **責任**: IoT Core経由(MQTT想定)で受信したデータの処理・蓄積。Bedrockを用いた非構造化データ（画像・HTML等）からの情報抽出と共通スキーマ変換。複数ユーザーが利用可能なマルチテナント構成とし、ユーザーごとの論理的なデータ分離とセキュアなアクセス制御を実現した上で、DynamoDB等へ保存・管理する。
 
 ### 3. 日誌作成システム (Daily Log System)
 *   **パス**: `daily-log/`

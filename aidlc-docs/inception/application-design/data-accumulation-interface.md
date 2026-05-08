@@ -12,17 +12,18 @@
 ## 2. MQTT トピック設計
 メッセージの種類や送信元に応じてルーティングしやすいよう、以下のトピック構造とします。
 
-* `shadowsync/logs/{device_id}/osapi`
-* `shadowsync/logs/{device_id}/chrome`
-* `shadowsync/logs/{device_id}/screenshot`
+* `shadowsync/logs/{user_id}/{device_id}/osapi`
+* `shadowsync/logs/{user_id}/{device_id}/chrome`
+* `shadowsync/logs/{user_id}/{device_id}/screenshot`
 
-*(※ `{device_id}` は各PCを一意に識別するID。個人利用であっても将来的な拡張を見据えて付与)*
+*(※ `{user_id}` はユーザーを一意に識別するID。`{device_id}` はそのユーザーの各PCを識別するID。将来的な複数人利用（マルチテナント）を見据えアクセスを分離するために付与)*
 
 ## 3. 共通ペイロード (JSONスキーマ)
 Bedrockでの抽出やDynamoDBへの保存を容易にするため、すべてのロガーは以下の「共通ヘッダ」を含めたJSONで送信します。
 
 ```json
 {
+  "user_id": "usr_123456",
   "device_id": "PC-001",
   "timestamp": "2026-05-08T23:30:00Z",
   "logger_type": "osapi | chrome | screenshot",
@@ -39,7 +40,7 @@ Bedrockでの抽出やDynamoDBへの保存を容易にするため、すべて�
 ```json
 "data": {
   "active_window_title": "初期仕様.md - Visual Studio Code",
-  "process_name": "Code.exe",
+    "process_name": "Code.exe",
   "interaction_type": "keyboard_input" // key, mouse, none 等
 }
 ```
@@ -60,7 +61,7 @@ Bedrockでの抽出やDynamoDBへの保存を容易にするため、すべて�
 
 ```json
 "data": {
-  "s3_object_key": "raw/screenshots/PC-001/2026/05/08/23-30-00.png",
+  "s3_object_key": "raw/screenshots/usr_123456/PC-001/2026/05/08/23-30-00.png",
   "screen_index": 0,
   "resolution": "1920x1080"
 }
