@@ -104,3 +104,11 @@
 **Context**: Interface details finalized. `data-accumulation-interface.md` and child `intent.md` files updated to enforce these decisions. Parent AI-DLC workflow complete.
 
 ---
+
+## Units Generation - Intent Rewrite
+**Timestamp**: 2026-05-09T00:34:54+09:00
+**User Input**: "各サブAIDLCの入力をもう一度見直してください。必要なものは考え直してください"
+**AI Response**: "すべての子AI-DLCの intent.md を抜本的に見直し、コンテキスト、機能要件、制約事項、スコープ外などを網羅した詳細な指示書として再設計しました。"
+**Context**: Units Generation - Rewrote all intent.md files to provide robust inputs for child AI-DLCs.
+
+---
