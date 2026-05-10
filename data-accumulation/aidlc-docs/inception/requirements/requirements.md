@@ -219,11 +219,12 @@ flowchart TB
 ### FR-2: 画像アップロード基盤
 
 #### FR-2.1: Presigned URL生成
-- **エンドポイント**: API Gateway HTTP API + Lambda
-- **認証**: ユーザー検証のためのCognito統合
+- **エンドポイント**:
+  - Chrome拡張機能用: Lambda Function URL (IAM認証 + Cognito IDプール)
+  - ローカルアプリケーション用 (ss-tool): IoT Core Request/Response パターン
 - **機能**:
   - S3直接アップロード用のPresigned URL生成
-  - URL生成前のユーザーID検証
+  - URL生成前のユーザーID検証 (CognitoのIAMロール、またはX.509証明書の属性から取得)
   - Chrome拡張機能とローカルアプリケーションの両方をサポート
 
 #### FR-2.2: Presigned URLセキュリティ
@@ -446,7 +447,7 @@ def transform_mqtt_to_dynamodb(mqtt_payload):
 
 #### NFR-2.1: 認証
 - **IoT Core**: ローカルアプリ用のX.509証明書認証
-- **API Gateway**: Chrome拡張機能用のCognito User Poolオーソライザー
+- **Lambda Function URL**: Chrome拡張機能用のIAM認証（Cognito IDプール経由）
 - **最小権限の原則**: すべてのサービスに最小限のIAM権限
 
 #### NFR-2.2: データ暗号化
@@ -488,7 +489,7 @@ def transform_mqtt_to_dynamodb(mqtt_payload):
   - `iac/ingestion/`: IoT Core、Kinesis、取り込みLambda
   - `iac/processing/`: Bedrock統合、変換Lambda
   - `iac/storage/`: DynamoDB、S3、Knowledge Base
-  - `iac/api/`: API Gateway、Presigned URL Lambda
+  - `iac/api/`: Lambda Function URL、Presigned URL Lambda
   - `iac/monitoring/`: CloudWatchアラーム、ダッシュボード
 
 #### NFR-4.2: コード組織
@@ -676,17 +677,17 @@ def transform_mqtt_to_dynamodb(mqtt_payload):
 ```
 **注**: 画像本体はS3に直接アップロード（WebP形式、高圧縮率）
 
-### 5.2: API Gatewayエンドポイント
+### 5.2: Presigned URL生成エンドポイント
 
-#### 5.2.1: Presigned URL生成
+#### 5.2.1: Chrome拡張用 (HTTPS)
+- **エンドポイント**: Lambda Function URL
 - **メソッド**: POST
-- **パス**: `/api/v1/upload/presigned-url`
-- **認証**: Cognito User Pool
+- **認証**: AWS IAM (Cognito IDプールから取得した一時クレデンシャルによる署名)
 - **リクエストボディ**:
 ```json
 {
-  "file_name": "screenshot.png",
-  "content_type": "image/png",
+  "file_name": "screenshot.webp",
+  "content_type": "image/webp",
   "file_size": 1048576
 }
 ```
@@ -694,8 +695,31 @@ def transform_mqtt_to_dynamodb(mqtt_payload):
 ```json
 {
   "presigned_url": "https://s3.amazonaws.com/...",
-  "s3_key": "user-123/images/2026-05-09T12:34:56-uuid.png",
+  "s3_key": "raw/screenshots/user-123/device-123/YYYY/MM/DD/HH-mm-ss.webp",
   "expires_at": "2026-05-10T12:34:56Z"
+}
+```
+
+#### 5.2.2: ss-tool用 (MQTT Request/Response)
+- **要求トピック**: `shadowsync/api/{user_id}/{device_id}/presigned-url/request`
+- **応答トピック**: `shadowsync/api/{user_id}/{device_id}/presigned-url/response`
+- **認証**: X.509デバイス証明書（MQTTS）
+- **リクエストペイロード**:
+```json
+{
+  "file_name": "screenshot.webp",
+  "content_type": "image/webp",
+  "file_size": 1048576,
+  "correlation_id": "req-123"
+}
+```
+- **レスポンスペイロード**:
+```json
+{
+  "presigned_url": "https://s3.amazonaws.com/...",
+  "s3_key": "raw/screenshots/user-123/device-123/YYYY/MM/DD/HH-mm-ss.webp",
+  "expires_at": "2026-05-10T12:34:56Z",
+  "correlation_id": "req-123"
 }
 ```
 

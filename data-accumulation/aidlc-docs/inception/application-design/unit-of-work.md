@@ -111,15 +111,15 @@ lambda/
 **目的**: スクリーンショット画像アップロード用のPresigned URL生成
 
 **責任範囲**:
-- API Gateway HTTP APIエンドポイント提供
-- Cognito認証統合
+- Lambda Function URLエンドポイント提供（Chrome拡張用）
+- IoT Core Request/Response ルール統合（ss-tool用）
 - S3 Presigned URL生成
 - ユーザーID検証とアクセス制御
 
 **含まれるコンポーネント**:
-- API Gateway HTTP API
+- Lambda Function URL
+- IoT Core Rule (API Routing)
 - Lambda: Presigned URL
-- Cognito統合（オーソライザー）
 
 **CloudFormationスタック**: `iac/api.yaml`
 
@@ -138,13 +138,20 @@ lambda/
 - `LOG_LEVEL`: ログレベル
 
 **IAMロール**:
-- Lambda Presigned URL → S3 PutObject権限（user_id制限付き）
+- Lambda Presigned URL → S3 PutObject権限（user_id制限付き）、IoT Core Publish権限（レスポンス用）
+- Lambda Function URL → 呼び出し権限（Cognito IAMロール用）
 
-**APIエンドポイント**:
-- `POST /api/v1/upload/presigned-url`
-- 認証: Cognito User Pool
-- リクエスト: `{ "file_name": "screenshot.webp", "content_type": "image/webp", "file_size": 1048576 }`
-- レスポンス: `{ "presigned_url": "https://...", "s3_key": "...", "expires_at": "..." }`
+**エンドポイント**:
+- **Chrome拡張用 (HTTPS)**:
+  - エンドポイント: Lambda Function URL (IAM認証)
+  - 認証: Cognito IDプール
+  - リクエスト: `{ "file_name": "screenshot.webp", "content_type": "image/webp", "file_size": 1048576 }`
+  - レスポンス: `{ "presigned_url": "https://...", "s3_key": "...", "expires_at": "..." }`
+- **ss-tool用 (MQTT)**:
+  - トピック: `shadowsync/api/{user_id}/{device_id}/presigned-url/request`
+  - 認証: X.509デバイス証明書
+  - リクエスト: `{ "file_name": "screenshot.webp", "content_type": "image/webp", "file_size": 1048576, "correlation_id": "req-123" }`
+  - レスポンス: (トピック `shadowsync/api/.../response` 経由) `{ "presigned_url": "https://...", "s3_key": "...", "expires_at": "...", "correlation_id": "req-123" }`
 
 ---
 
