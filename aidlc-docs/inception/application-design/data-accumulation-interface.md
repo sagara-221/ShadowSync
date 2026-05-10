@@ -61,7 +61,7 @@ Bedrockでの抽出やDynamoDBへの保存を容易にするため、すべて�
 
 ```json
 "data": {
-  "s3_object_key": "raw/screenshots/usr_123456/PC-001/2026/05/08/23-30-00.png",
+  "s3_object_key": "raw/screenshots/usr_123456/PC-001/2026/05/08/23-30-00.webp",
   "screen_index": 0,
   "resolution": "1920x1080"
 }
