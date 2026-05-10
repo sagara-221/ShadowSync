@@ -76,9 +76,10 @@ flowchart TB
             Bedrock["Amazon Bedrock<br/>Nova Lite"]
         end
         
-        subgraph API["API"]
-            APIGateway["API Gateway<br/>HTTP API"]
-            LambdaPresigned["Lambda: Presigned URL<br/>生成"]
+        subgraph PresignedURL["Presigned URL取得"]
+            IoTPresigned["IoT Core<br/>Request/Response"]
+            LambdaFuncURL["Lambda Function URL<br/>(IAM認証)"]
+            LambdaPresigned["Lambda: Presigned URL"]
         end
     end
     
@@ -88,10 +89,16 @@ flowchart TB
     SSTool -->|MQTTS| IoTAuth
     IoTAuth --> IoTCore
     
-    SSTool -->|Presigned URL要求| APIGateway
-    APIGateway --> LambdaPresigned
-    LambdaPresigned -.->|Presigned URL| SSTool
+    SSTool -->|Presigned URL要求<br/>(MQTTS)| IoTPresigned
+    IoTPresigned --> LambdaPresigned
+    LambdaPresigned -.->|レスポンス<br/>(MQTTS)| SSTool
+    
+    Chrome -->|Presigned URL要求<br/>(HTTPS)| LambdaFuncURL
+    LambdaFuncURL --> LambdaPresigned
+    LambdaPresigned -.->|レスポンス<br/>(HTTPS)| Chrome
+    
     SSTool -.->|HTTPS<br/>画像アップロード| S3Raw
+    Chrome -.->|HTTPS<br/>画像アップロード| S3Raw
     
     IoTCore --> IoTRules
     IoTRules --> Kinesis
@@ -134,9 +141,9 @@ flowchart TB
 **フロー2: スクリーンショット（2段階処理）**
 
 *第1段階: メタデータ保存*
-1. ss-tool → API Gateway（Presigned URL要求）
+1. クライアント（ss-tool/Chrome拡張） → IoT Core または Lambda Function URL（Presigned URL要求）
 2. Lambda Presigned → Presigned URL生成
-3. ss-tool → S3（画像直接アップロード、WebP形式）
+3. クライアント → S3（画像直接アップロード、WebP形式）
 4. ss-tool → IoT Core（メタデータ送信）
 5. IoT Rules → Kinesis → Lambda Router
 6. Lambda Screenshot Meta → メタデータのみDynamoDBに保存
@@ -157,11 +164,11 @@ flowchart TB
   - **Chrome拡張ロガー（chrome-extension）**:
     - 認証: Amazon Cognito IDプール（MQTT over WebSockets、ポート443）
     - データ: ブラウザアクティビティ（URL、ページタイトル、HTMLスニペット）
-    - トピック: `shadowsync/logs/{user_id}/{device_id}/browser`
+    - トピック: `shadowsync/logs/{user_id}/{device_id}/chrome`
   - **OS APIロガー（osapi）**:
     - 認証: X.509デバイス証明書（MQTTS）
     - データ: ウィンドウ切り替え、オーディオセッション、定期スナップショット
-    - トピック: `shadowsync/logs/{user_id}/{device_id}/{window|audio|snapshot}`
+    - トピック: `shadowsync/logs/{user_id}/{device_id}/osapi`
   - **スクリーンショットロガー（ss-tool）**:
     - 認証: X.509デバイス証明書（MQTTS - メタデータ）、IAM/Presigned URL（S3 - 画像本体）
     - データ: スクリーンショットメタデータ（S3パス、解像度、アクティブウィンドウ情報）
@@ -191,10 +198,16 @@ flowchart TB
 #### FR-1.3: メッセージルーティング
 - **アーキテクチャ**: IoT Core → IoT Rules → Kinesis Data Streams → Lambda → DynamoDB/S3
 - **理由**: Kinesisは高スループット、バッファリング、リトライ機能を提供しスケーラビリティを実現
+- **IoT Rule SQL**:
+  ```sql
+  SELECT *, topic(5) as topic_suffix
+  FROM 'shadowsync/logs/+/+/+'
+  WHERE topic(5) IN ('chrome', 'osapi', 'screenshot')
+  ```
 - **ルーティングロジック**:
   - メッセージタイプ（`logger_type` + `event_type`）に基づいた処理分岐:
     - **構造化データ**: 直接DynamoDBに保存（LLM処理なし）
-      - `logger_type: "browser"` - ブラウザアクティビティ
+      - `logger_type: "chrome"` - ブラウザアクティビティ
       - `logger_type: "osapi"` - ウィンドウ、オーディオ、スナップショット
     - **スクリーンショットメタデータ**: DynamoDBにメタデータのみ保存
       - `logger_type: "screenshot"` - S3パス、解像度、ウィンドウ情報
@@ -232,11 +245,37 @@ flowchart TB
 
 ### FR-3: データ変換と正規化
 
+#### インターフェースマッピング（MQTT → DynamoDB）
+
+親AI-DLCが定義したMQTTインターフェースとDynamoDB内部スキーマの間で、Lambda関数が以下の変換を行います：
+
+| MQTTペイロード（親定義） | DynamoDBスキーマ | 変換 |
+|---------------------|----------------|------|
+| `data` | `activity_data` | フィールド名変換 |
+| `logger_type: "chrome"` | `logger_type: "chrome"` | そのまま |
+| `logger_type: "osapi"` | `logger_type: "osapi"` | そのまま |
+| `logger_type: "screenshot"` | `logger_type: "screenshot"` | そのまま |
+
+**変換ロジック例**:
+```python
+def transform_mqtt_to_dynamodb(mqtt_payload):
+    """MQTTペイロード（親定義）をDynamoDBスキーマに変換"""
+    return {
+        "user_id": mqtt_payload["user_id"],
+        "timestamp_event_id": f"{mqtt_payload['timestamp']}#{uuid.uuid4()}",
+        "timestamp": mqtt_payload["timestamp"],
+        "device_id": mqtt_payload["device_id"],
+        "logger_type": mqtt_payload["logger_type"],
+        "event_type": mqtt_payload["event_type"],
+        "activity_data": mqtt_payload["data"]  # data → activity_data 変換
+    }
+```
+
 #### FR-3.1: 構造化データの直接マッピング
 - **対象データ**: 3つのロガーツールから送信される構造化データ
 - **処理方法**: Lambda関数による直接的なスキーマ変換（LLM不要）
 - **変換対象**:
-  - **Chrome拡張ロガー（logger_type: "browser"）**:
+  - **Chrome拡張ロガー（logger_type: "chrome"）**:
     - ブラウザアクティビティ（URL、ページタイトル）
     - HTMLスニペット（オプション、設定でON/OFF）
   - **OS APIロガー（logger_type: "osapi"）**:
@@ -248,7 +287,7 @@ flowchart TB
 - **処理ロジック**:
   - IoT Coreメッセージを受信
   - `logger_type`と`event_type`で識別
-  - 共通スキーマにマッピング
+  - 共通スキーマにマッピング（MQTTペイロードの`data`フィールドを`activity_data`に変換）
   - DynamoDBに保存
 
 #### FR-3.2: 画像キャプション生成（S3イベントトリガー）
@@ -285,13 +324,13 @@ flowchart TB
 | `timestamp_event_id` | String | ✓ | タイムスタンプ#UUID（ソートキー） | `"2026-05-09T12:34:56Z#abc-123"` |
 | `timestamp` | String | ✓ | ISO 8601形式のタイムスタンプ | `"2026-05-09T12:34:56Z"` |
 | `device_id` | String | ✓ | デバイス識別子 | `"device-123"` |
-| `logger_type` | String | ✓ | ロガータイプ（browser, osapi, screenshot） | `"browser"` |
+| `logger_type` | String | ✓ | ロガータイプ（chrome, osapi, screenshot） | `"chrome"` |
 | `event_type` | String | ✓ | イベントタイプ | `"page_navigation"` |
-| `activity_data` | Map | ✓ | イベント固有のデータ（下記参照） | `{...}` |
+| `activity_data` | Map | ✓ | イベント固有のデータ（下記参照）<br/>※MQTTペイロードでは`data`フィールド、Lambda内で`activity_data`に変換 | `{...}` |
 
 **activity_data構造（logger_type別）**:
 
-**1. Chrome拡張（logger_type: "browser"）**
+**1. Chrome拡張（logger_type: "chrome"）**
 
 | event_type | activity_dataフィールド | データ型 | 必須 | 説明 | 例 |
 |------------|------------------------|----------|------|------|-----|
@@ -530,7 +569,7 @@ flowchart TB
 ### 5.1: IoT Coreトピック
 
 #### 5.1.1: Chrome拡張ロガー - ブラウザアクティビティ
-- **トピックパターン**: `shadowsync/logs/{user_id}/{device_id}/browser`
+- **トピックパターン**: `shadowsync/logs/{user_id}/{device_id}/chrome`
 - **送信タイミング**: ページ遷移、タブ切り替え時
 - **認証方式**: Amazon Cognito IDプール（MQTT over WebSockets、ポート443）
 - **メッセージフォーマット**:
@@ -539,7 +578,7 @@ flowchart TB
   "user_id": "user-123",
   "device_id": "chrome-ext-abc",
   "timestamp": "2026-05-09T12:34:56Z",
-  "logger_type": "browser",
+  "logger_type": "chrome",
   "event_type": "page_navigation",
   "data": {
     "url": "https://github.com/user/repo",
@@ -551,7 +590,7 @@ flowchart TB
 **注**: `html_snippet`はオプション（設定でON/OFF可能）
 
 #### 5.1.2: OS APIロガー - ウィンドウ切り替え
-- **トピックパターン**: `shadowsync/logs/{user_id}/{device_id}/window`
+- **トピックパターン**: `shadowsync/logs/{user_id}/{device_id}/osapi`
 - **送信タイミング**: アクティブウィンドウが変更されたとき
 - **認証方式**: X.509デバイス証明書（MQTTS）
 - **メッセージフォーマット**:
@@ -570,7 +609,7 @@ flowchart TB
 ```
 
 #### 5.1.3: OS APIロガー - オーディオセッション変更
-- **トピックパターン**: `shadowsync/logs/{user_id}/{device_id}/audio`
+- **トピックパターン**: `shadowsync/logs/{user_id}/{device_id}/osapi`
 - **送信タイミング**: Audio Sessionが追加・削除されたとき
 - **認証方式**: X.509デバイス証明書（MQTTS）
 - **メッセージフォーマット**:
@@ -594,7 +633,7 @@ flowchart TB
 ```
 
 #### 5.1.4: OS APIロガー - 定期スナップショット
-- **トピックパターン**: `shadowsync/logs/{user_id}/{device_id}/snapshot`
+- **トピックパターン**: `shadowsync/logs/{user_id}/{device_id}/osapi`
 - **送信タイミング**: 5分間隔
 - **認証方式**: X.509デバイス証明書（MQTTS）
 - **メッセージフォーマット**:
