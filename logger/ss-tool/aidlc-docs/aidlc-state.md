@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-09T12:19:00+09:00
-- **Current Stage**: INCEPTION - Workflow Planning (Awaiting Approval)
+- **Current Stage**: CONSTRUCTION - Functional Design (Waiting for user)
 
 ## Workspace State
 - **Existing Code**: No
@@ -33,8 +33,8 @@
 - [ ] Reverse Engineering - SKIP (Greenfield)
 - [x] Requirements Analysis
 - [ ] User Stories - SKIP
-- [/] Workflow Planning (Awaiting Approval)
-- [ ] Application Design - EXECUTE
+- [x] Workflow Planning
+- [x] Application Design
 - [ ] Units Generation - SKIP
 
 ### 🟢 CONSTRUCTION PHASE
