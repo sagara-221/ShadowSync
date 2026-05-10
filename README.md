@@ -120,13 +120,33 @@ flowchart TB
 
 ## ドキュメント構成
 
-| 領域              | 内容                                                      | 主なリンク                                                                                                                                                                                                                                                             |
-| ----------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 親AI-DLC          | 全体Intent、ユニット分解、子AI-DLCへの委譲設計            | [親Inception](aidlc-docs/inception/requirements/requirements.md), [Unit定義](aidlc-docs/inception/application-design/unit-of-work.md), [依存関係](aidlc-docs/inception/application-design/unit-of-work-dependency.md)                                                  |
-| Logger            | OS、Chrome、スクリーンショットの活動ログ取得              | [osapi](logger/osapi/aidlc-docs/inception/requirements/requirements.md), [chrome-extension](logger/chrome-extension/aidlc-docs/inception/requirements/requirements.md), [ss-tool](logger/ss-tool/aidlc-docs/inception/requirements/requirements.md)                    |
-| Data Accumulation | IoT Core、Lambda、DynamoDB、S3、Bedrockによる蓄積・正規化 | [requirements](data-accumulation/aidlc-docs/inception/requirements/requirements.md), [unit-of-work](data-accumulation/aidlc-docs/inception/application-design/unit-of-work.md)                                                                                         |
-| Daily Log         | 正規化済み活動データからの日報生成とNotion連携            | [requirements](daily-log/aidlc-docs/inception/requirements/requirements.md), [application-design](daily-log/aidlc-docs/inception/application-design/application-design.md)                                                                                             |
-| Digital Twin      | 過去活動に対するRAG検索と対話UI                           | [requirements](digital-twin/aidlc-docs/inception/requirements/requirements.md), [application-design](digital-twin/aidlc-docs/inception/application-design/application-design.md), [unit-of-work](digital-twin/aidlc-docs/inception/application-design/unit-of-work.md) |
+### 1. 親AI-DLC (システム全体設計)
+システム全体のIntent、サブシステム（ユニット）への分割、各子AI-DLCへの委譲設計などを定義しています。
+- **[親Inception 要件定義](aidlc-docs/inception/requirements/requirements.md)**: システム全体の要件と、「親AI-DLCは設計と委譲に専念する」という基本方針
+- **[Unit定義](aidlc-docs/inception/application-design/unit-of-work.md)**: システム全体のサブシステム（ロガー、データ蓄積など）分割の定義
+- **[依存関係マトリクス](aidlc-docs/inception/application-design/unit-of-work-dependency.md)**: 各ユニット間のデータフロー、通信プロトコル、依存関係の整理
+
+### 2. Logger (ロガーシステム)
+クライアント端末でユーザーの活動を記録するエージェント群の要件定義です。
+- **[OS APIロガー 要件定義](logger/osapi/aidlc-docs/inception/requirements/requirements.md)**: Windows OS APIを用いたアクティブウィンドウや音声セッションの取得要件
+- **[Chrome拡張ロガー 要件定義](logger/chrome-extension/aidlc-docs/inception/requirements/requirements.md)**: ブラウザの閲覧URL、ページタイトル、HTMLスニペットの取得要件
+- **[スクリーンショットロガー 要件定義](logger/ss-tool/aidlc-docs/inception/requirements/requirements.md)**: 画面の定期撮影、画像アップロード(S3)、メタデータ送信要件
+
+### 3. Data Accumulation (データ蓄積システム)
+クライアントからのログを受け付け、変換・正規化してRAG検索や日報に使える形にするAWSバックエンド基盤です。
+- **[要件定義](data-accumulation/aidlc-docs/inception/requirements/requirements.md)**: IoT Coreでの受付、DynamoDBでの正規化、S3保存、Bedrockによる画像キャプション生成の要件
+- **[Unit定義](data-accumulation/aidlc-docs/inception/application-design/unit-of-work.md)**: バックエンド内でのコンポーネント構成やルーティングLambdaの設計
+
+### 4. Daily Log (日誌作成システム)
+正規化済みの活動データから1日のタイムライン・要約を作成し、Notionへ出力するバッチシステムです。
+- **[要件定義](daily-log/aidlc-docs/inception/requirements/requirements.md)**: DynamoDBからのログ抽出、Bedrockによる要約、Notion API連携による日報自動生成の要件
+- **[アプリケーション設計](daily-log/aidlc-docs/inception/application-design/application-design.md)**: Lambdaによるバッチ処理のアーキテクチャ、データモデル、PBT/Security制約の設計
+
+### 5. Digital Twin (デジタルツインシステム)
+蓄積された過去の活動に対するRAG検索と、Bedrockを用いた対話型デスクトップUIシステムです。
+- **[要件定義](digital-twin/aidlc-docs/inception/requirements/requirements.md)**: デスクトップUI、Cognito認証、RAG検索、マルチテナント分離、会話履歴保存の要件
+- **[アプリケーション設計](digital-twin/aidlc-docs/inception/application-design/application-design.md)**: PySide6クライアントとサーバーレスAPI間の責務境界、API設計、根拠(Evidence)の返し方の設計
+- **[Unit定義](digital-twin/aidlc-docs/inception/application-design/unit-of-work.md)**: デジタルツイン内でのUI、API、Retrieval、Historyなどのサブモジュール分割
 
 ## AI-DLC構成
 
