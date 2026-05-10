@@ -24,7 +24,7 @@
 
 ### 6. S3Uploader
 - **責務**: Presigned URLを取得し、S3へ画像をアップロード
-- **概要**: バックエンドAPI（Lambda/API Gateway）へPresigned URLの発行を依頼し、HTTPSのPUTリクエストで画像をS3にアップロードする。アップロード成功後、`UploadCompleted` イベントを発行する。
+- **概要**: AWS IoT Core Request/Response経由でバックエンドのPresigned URL発行LambdaへURL発行を依頼し、HTTPSのPUTリクエストで画像をS3にアップロードする。アップロード成功後、`UploadCompleted` イベントを発行する。
 
 ### 7. MqttPublisher
 - **責務**: メタデータのMQTTS送信

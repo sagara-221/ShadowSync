@@ -49,10 +49,12 @@
 - [ ] 運用 - プレースホルダー
 
 ## 現在状況
-- **ライフサイクルフェーズ**: INCEPTION
+- **ライフサイクルフェーズ**: INCEPTION → CONSTRUCTION
 - **現在ステージ**: INCEPTION完了
-- **次の作業**: ユーザー指示があるまで待機。CONSTRUCTIONフェーズは未開始。
-- **状態**: digital-twinのINCEPTIONフェーズは完了。要件、ユーザーストーリー、ワークフロー計画、アプリケーション設計、作業単位生成はすべて承認済み。
+- **次の作業**: Functional Design
+- **状態**: digital-twinのINCEPTIONフェーズは完了。要件、ユーザーストーリー、ワークフロー計画、アプリケーション設計、作業単位生成はすべて承認済み。Constructionフェーズ開始待ち。
+- **最終確認**: 2026-05-10T15:40:25+09:00
+- **Construction準備メモ**: RAG検索I/F、Cognito認証フロー、Conversation API、会話履歴スキーマ、根拠メタデータ形式をFunctional Designで確定する。
 
 ## 実行計画サマリー
 - **今回の要求範囲**: INCEPTIONのみ

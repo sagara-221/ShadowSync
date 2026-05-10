@@ -230,22 +230,23 @@ Resources:
 
 ---
 
-### 6. API Gateway → Lambda Presigned URL
-**Type**: HTTP API
-**Protocol**: HTTPS
-**Data Format**: JSON (REST API)
+### 6. Presigned URL Request → Lambda Presigned URL
+**Type**: Dual request interface
+**Protocol**: HTTPS for Chrome extension, MQTTS Request/Response for ss-tool
+**Data Format**: JSON
 
 **Flow**:
-1. Client sends POST request to API Gateway
-2. Cognito authorizer validates token
-3. API Gateway invokes Lambda
-4. Lambda generates Presigned URL
-5. Returns URL to client
+1. Chrome extension sends POST request to Lambda Function URL with IAM authentication from Cognito ID Pool
+2. ss-tool sends request to IoT Core Request/Response topic with X.509 authentication
+3. Lambda validates caller identity and requested file metadata
+4. Lambda generates S3 Presigned URL under the allowed user/device prefix
+5. Lambda returns URL through HTTPS response or IoT Core response topic
 
 **Error Handling**:
-- API Gateway 4xx/5xx responses
+- Lambda Function URL 4xx/5xx responses for Chrome extension
+- IoT Core response error payload for ss-tool
 - Lambda error mapping
-- CloudWatch API metrics
+- CloudWatch Lambda metrics
 
 ---
 
@@ -256,7 +257,7 @@ Resources:
 
 **Flow**:
 1. Lambda receives request with file metadata
-2. Validates user_id from Cognito token
+2. Validates user_id from Cognito identity or X.509/IoT Core context
 3. Generates S3 Presigned URL with user_id prefix
 4. Returns URL with expiration time
 
@@ -292,7 +293,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant Logger as ss-tool
-    participant API as API Gateway
+    participant API as Lambda Function URL / IoT Request
     participant Presigned as Lambda Presigned URL
     participant S3 as S3 Bucket
     participant IoT as IoT Core
@@ -304,7 +305,7 @@ sequenceDiagram
     participant BedrockAPI as Amazon Bedrock
     
     Note over Logger,DDB: Stage 1: Metadata
-    Logger->>API: POST /presigned-url
+    Logger->>API: Presigned URL request
     API->>Presigned: Invoke
     Presigned-->>Logger: Presigned URL
     Logger->>S3: PUT Image (HTTPS)

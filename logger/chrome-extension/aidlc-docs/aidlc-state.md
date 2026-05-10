@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-09T11:34:00+09:00
-- **Current Stage**: INCEPTION - Workflow Planning
+- **Current Stage**: INCEPTION - Complete
 
 ## Extension Configuration
 | Extension | Enabled | Decided At |
@@ -45,7 +45,9 @@
 - [ ] Operations - PLACEHOLDER
 
 ## Current Status
-- **Lifecycle Phase**: INCEPTION
-- **Current Stage**: Workflow Planning Complete
+- **Lifecycle Phase**: INCEPTION → CONSTRUCTION
+- **Current Stage**: Inception Complete
 - **Next Stage**: Code Generation
-- **Status**: Ready to proceed
+- **Status**: INCEPTION phase complete, ready to proceed to Code Generation
+- **Last Reviewed**: 2026-05-10T15:40:25+09:00
+- **Construction Readiness Notes**: Code Generation must align payload fields with the updated parent interface and data-accumulation schema, especially `title`, optional `html_snippet`, and Cognito MQTT over WebSockets configuration.

@@ -4,7 +4,7 @@
 - **Project Type**: Greenfield AWS Serverless Backend
 - **Architecture**: Multi-service serverless data accumulation system
 - **Deployment Model**: CloudFormation-based Infrastructure as Code
-- **Primary Components**: IoT Core, Kinesis, Lambda, DynamoDB, S3, Bedrock, API Gateway
+- **Primary Components**: IoT Core, Kinesis, Lambda, DynamoDB, S3, Bedrock, Lambda Function URL, IoT Core Request/Response
 
 ---
 
@@ -246,5 +246,5 @@ lambda/
 
 ---
 
-**Document Status**: Awaiting User Input
-**Required Action**: Please fill in all [Answer]: tags above
+**Document Status**: Approved / Complete
+**Required Action**: None. Approved answers were reflected in Units Generation.

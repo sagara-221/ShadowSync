@@ -6,7 +6,7 @@
 - **User-facing changes**: No - This is a backend data accumulation system with no direct user interface
 - **Structural changes**: Yes - Complete new AWS serverless architecture with multiple services
 - **Data model changes**: Yes - New DynamoDB schema, S3 storage structure, and Knowledge Base integration
-- **API changes**: Yes - New API Gateway endpoints for Presigned URL generation
+- **API changes**: Yes - Presigned URL generation via Lambda Function URL for Chrome extension and IoT Core Request/Response for ss-tool
 - **NFR impact**: Yes - Performance, security, cost optimization, and observability requirements
 
 ### Risk Assessment
@@ -108,7 +108,7 @@ flowchart TD
   - **Rationale**: Comprehensive requirements document created with unified schema
 
 - [ ] **User Stories** - SKIP
-  - **Rationale**: Backend data accumulation system with no direct user interface. User stories not needed as the system interfaces are well-defined (IoT Core topics, API Gateway endpoints) and the requirements document already contains detailed interface specifications.
+  - **Rationale**: Backend data accumulation system with no direct user interface. User stories not needed as the system interfaces are well-defined (IoT Core topics, Lambda Function URL / IoT Core Request/Response for Presigned URL, and MQTT payloads) and the requirements document already contains detailed interface specifications.
 
 - [x] **Workflow Planning** - IN PROGRESS
   - **Rationale**: Creating execution plan to determine which phases to execute
@@ -118,7 +118,7 @@ flowchart TD
 
 - [ ] **Units Planning** - EXECUTE
   - **Rationale**: Need to break down the system into implementable units:
-    - Infrastructure stacks (IoT Core, Kinesis, DynamoDB, S3, API Gateway)
+    - Infrastructure stacks (IoT Core, Kinesis, DynamoDB, S3, Lambda Function URL, IoT Core Request/Response)
     - Lambda functions (Router, Structured, Screenshot Meta, Bedrock, Presigned URL)
     - Authentication configurations (X.509, Cognito)
     - Monitoring and error handling setup
@@ -280,6 +280,6 @@ Build a production-ready AWS serverless backend system that:
 
 ---
 
-**Document Status**: Ready for Review
-**Approval Required**: Yes
+**Document Status**: Approved / Complete
+**Approval Required**: No
 **Next Phase**: Units Planning

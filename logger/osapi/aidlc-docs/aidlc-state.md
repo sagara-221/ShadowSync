@@ -13,7 +13,7 @@
 ## Workspace State
 - **Existing Code**: No
 - **Reverse Engineering Needed**: No
-- **Workspace Root**: e:\_MainData\1.Hobby\1.Engineering\Hackathon\AWSSummit\ShadowSync\logger\osapi
+- **Workspace Root**: /Users/tsubasa/Documents/codex/ShadowSync/logger/osapi
 
 ## Extension Configuration
 | Extension | Enabled | Decided At |
@@ -52,3 +52,5 @@
 - **Current Stage**: Functional Design Complete
 - **Next Stage**: Code Generation
 - **Status**: Ready to proceed
+- **Last Reviewed**: 2026-05-10T15:40:25+09:00
+- **Construction Readiness Notes**: Code Generation must align emitted payloads with the updated parent data-accumulation interface.

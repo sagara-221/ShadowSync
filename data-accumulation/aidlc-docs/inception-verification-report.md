@@ -1,5 +1,7 @@
 # Data Accumulation Inception 確認レポート
 
+> **Superseded Notice**: このレポートは初回確認時点の条件付き評価です。Presigned URL認証方式の重大問題は後続の `inception-final-evaluation.md` で解決済みとして承認されています。現時点では `inception-final-evaluation.md` と最新の `requirements.md` / `unit-of-work.md` を正としてください。
+
 **プロジェクト**: ShadowSync - データ蓄積システム  
 **レポート作成日**: 2026-05-10  
 **レビュー対象**: data-accumulation配下のInceptionフェーズドキュメント  

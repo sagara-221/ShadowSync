@@ -26,12 +26,12 @@
 
 ### 2. データ蓄積システム (Data Accumulation System)
 *   **パス**: `data-accumulation/`
-*   **責任**: IoT Core経由(MQTT想定)で受信したデータの処理・蓄積。Bedrockを用いた非構造化データ（画像・HTML等）からの情報抽出と共通スキーマ変換。複数ユーザーが利用可能なマルチテナント構成とし、ユーザーごとの論理的なデータ分離とセキュアなアクセス制御を実現した上で、DynamoDB等へ保存・管理する。
+*   **責任**: IoT Core経由(MQTT/MQTTS/MQTT over WebSockets)で受信したデータの処理・蓄積。構造化データ（OS API、Chrome URL/タイトル、オーディオセッション等）はLambdaでDynamoDBスキーマへ直接マッピングし、スクリーンショット画像はS3 ObjectCreatedを契機にBedrock Nova Lite等で日本語キャプションを生成する。ss-tool向けPresigned URLはIoT Core Request/Response、Chrome拡張向けPresigned URLはLambda Function URL + Cognito IDプール由来IAM認証で発行する。複数ユーザーが利用可能なマルチテナント構成とし、ユーザーごとの論理的なデータ分離とセキュアなアクセス制御を実現した上で、DynamoDB、S3、S3 Vectors / Bedrock Knowledge Base 等へ保存・管理する。
 
 ### 3. 日誌作成システム (Daily Log System)
 *   **パス**: `daily-log/`
-*   **責任**: 蓄積されたデータソースを用いた日報の自動生成とNotionへのエクスポート。EventBridgeとLambdaによる定期実行。
+*   **責任**: `data-accumulation` が管理するDynamoDBの正規化済みアクティビティを主入力とした日報の自動生成とNotionへのエクスポート。初期版は単一ユーザーを優先しつつ、`user_id`、ユーザー別タイムゾーン、Notion設定を保持して将来の複数ユーザー対応を阻害しない。EventBridgeとLambdaによる定期実行。
 
 ### 4. デジタルツインシステム (Digital Twin System)
 *   **パス**: `digital-twin/`
-*   **責任**: ユーザーの過去の行動や傾向に対するチャットインターフェースの提供。RAGを活用したAI回答システムの構築。
+*   **責任**: ユーザーの過去の行動や傾向に対するデスクトップ対話インターフェースの提供。Cognito認証、Conversation API、`data-accumulation` が構築するS3 Vectors / Bedrock Knowledge BaseベースのRAG検索、Bedrock Nova系モデルによる根拠付きAI回答、会話履歴保存を扱う。活動ログの収集、正規化、ベクトル生成は対象外。

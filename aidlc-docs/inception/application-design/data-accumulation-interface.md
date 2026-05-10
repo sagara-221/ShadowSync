@@ -19,7 +19,8 @@
 *(※ `{user_id}` はユーザーを一意に識別するID。`{device_id}` はそのユーザーの各PCを識別するID。将来的な複数人利用（マルチテナント）を見据えアクセスを分離するために付与)*
 
 ## 3. 共通ペイロード (JSONスキーマ)
-Bedrockでの抽出やDynamoDBへの保存を容易にするため、すべてのロガーは以下の「共通ヘッダ」を含めたJSONで送信します。
+子AI-DLCのInception結果を反映し、すべてのロガーは以下の「共通ヘッダ」を含めたJSONで送信します。
+構造化データはバックエンドLambdaでDynamoDBスキーマへ直接マッピングし、LLM処理は原則としてスクリーンショット画像の日本語キャプション生成に限定します。
 
 ```json
 {
@@ -27,7 +28,7 @@ Bedrockでの抽出やDynamoDBへの保存を容易にするため、すべて�
   "device_id": "PC-001",
   "timestamp": "2026-05-08T23:30:00Z",
   "logger_type": "osapi | chrome | screenshot",
-  "event_type": "window_changed | page_visited | periodic_ss",
+  "event_type": "window_changed | audio_session_changed | periodic_snapshot | page_navigation | periodic_ss",
   "data": {
     // 各ロガー固有のデータ（以下参照）
   }
@@ -37,11 +38,38 @@ Bedrockでの抽出やDynamoDBへの保存を容易にするため、すべて�
 ### 3.1 各ロガーの固有データ (`data` プロパティ内) の構成案
 
 **A. OS API (osapi)**
+
+アクティブウィンドウ切替:
+
 ```json
 "data": {
-  "active_window_title": "初期仕様.md - Visual Studio Code",
-    "process_name": "Code.exe",
-  "interaction_type": "keyboard_input" // key, mouse, none 等
+  "window_title": "初期仕様.md - Visual Studio Code",
+  "process_name": "Code.exe"
+}
+```
+
+オーディオセッション変更:
+
+```json
+"data": {
+  "audio_sessions": [
+    {
+      "session_id": "session-abc-123",
+      "process_name": "Spotify.exe",
+      "volume_level": 0.75
+    }
+  ]
+}
+```
+
+定期スナップショット:
+
+```json
+"data": {
+  "is_active": true,
+  "window_title": "Chrome - GitHub",
+  "process_name": "chrome.exe",
+  "audio_sessions": []
 }
 ```
 
@@ -49,20 +77,46 @@ Bedrockでの抽出やDynamoDBへの保存を容易にするため、すべて�
 ```json
 "data": {
   "url": "https://github.com/...",
-  "page_title": "Repository - GitHub",
-  "html_snippet": "<html>...</html>", // オプション(長文の場合は上限に注意)
-  "scroll_depth_percent": 45
+  "title": "Repository - GitHub",
+  "html_snippet": "<html>...</html>"
 }
 ```
 
+`html_snippet` はオプションです。送信上限、DynamoDB 400KB制限、S3退避要否は `data-accumulation` のFunctional Designで確定します。
+
 **C. スクリーンショット (ss-tool) の大容量データ通信設計**
 * AWS IoT Coreのメッセージペイロード上限は **128KB** です。SS画像を直接MQTTペイロードに含めると上限を超過し、通信が遮断されるリスクがあります。
-* そのため、SSツールは **「画像をS3に直接アップロード（Presigned URL等を利用）し、IoT CoreへはそのS3パス情報のみをMQTTで送信する」** 構成とします。
+* そのため、SSツールは **「画像をS3に直接アップロード（Presigned URLを利用）し、IoT CoreへはそのS3パス情報のみをMQTTで送信する」** 構成とします。
+* Presigned URL取得方式は、ローカルアプリであるss-toolでは **IoT Core Request/Response**、Chrome拡張では **Lambda Function URL + Cognito IDプール由来IAM認証** を使用します。
 
 ```json
 "data": {
   "s3_object_key": "raw/screenshots/usr_123456/PC-001/2026/05/08/23-30-00.webp",
   "screen_index": 0,
-  "resolution": "1920x1080"
+  "resolution": "1920x1080",
+  "active_window_title": "Visual Studio Code",
+  "process_name": "Code.exe"
 }
 ```
+
+バックエンドは、S3 ObjectCreatedを契機に画像をBedrock Nova Lite等へ渡し、日本語キャプションを生成して既存DynamoDBレコードの `caption_ja` を非同期更新します。
+
+## 4. Presigned URL取得インターフェース
+
+### 4.1 Chrome拡張向け HTTPS
+
+| 項目 | 内容 |
+|---|---|
+| エンドポイント | Lambda Function URL |
+| メソッド | POST |
+| 認証 | Cognito IDプールで取得した一時クレデンシャルによるIAM認証 |
+| 用途 | 画像アップロード用Presigned URLの取得 |
+
+### 4.2 ss-tool向け MQTT Request/Response
+
+| 項目 | 内容 |
+|---|---|
+| 要求トピック | `shadowsync/api/{user_id}/{device_id}/presigned-url/request` |
+| 応答トピック | `shadowsync/api/{user_id}/{device_id}/presigned-url/response` |
+| 認証 | X.509デバイス証明書によるMQTTS |
+| 用途 | 画像アップロード用Presigned URLの取得 |

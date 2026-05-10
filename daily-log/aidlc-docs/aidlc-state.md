@@ -52,7 +52,9 @@
 - [ ] Operations - PLACEHOLDER
 
 ## Current Status
-- **Lifecycle Phase**: INCEPTION
+- **Lifecycle Phase**: INCEPTION → CONSTRUCTION
 - **Current Stage**: Inception Complete
-- **Next Stage**: Construction Phase Start
-- **Status**: Construction design artifacts were cleared by user request; waiting for next instruction
+- **Next Stage**: Functional Design
+- **Status**: INCEPTION phase complete, ready to proceed to CONSTRUCTION phase
+- **Last Reviewed**: 2026-05-10T15:40:25+09:00
+- **Construction Readiness Notes**: Functional Design must define target-date selection, Notion database properties, retry/re-run behavior, LLM prompt contract, and PBT properties.

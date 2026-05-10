@@ -66,7 +66,7 @@
 #### FR-2.1: Presigned URL生成
 **Assigned Unit**: Lambda Presigned URL  
 **Components**:
-- API Gateway HTTP API
+- Lambda Function URL for Chrome extension and IoT Core Request/Response for ss-tool
 - Lambda Presigned URL
 - Cognito統合
 

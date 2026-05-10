@@ -3,12 +3,12 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-09T00:00:00Z
-- **Current Stage**: INCEPTION - Workflow Planning
+- **Current Stage**: INCEPTION - Complete
 
 ## Workspace State
 - **Existing Code**: No
 - **Reverse Engineering Needed**: No
-- **Workspace Root**: /Users/sagara/ShadowSync/data-accumulation
+- **Workspace Root**: /Users/tsubasa/Documents/codex/ShadowSync/data-accumulation
 
 ## Code Location Rules
 - **Application Code**: Workspace root (NEVER in aidlc-docs/)
@@ -50,6 +50,8 @@
 
 ## Current Status
 - **Lifecycle Phase**: INCEPTION → CONSTRUCTION
-- **Current Stage**: Units Generation Complete
+- **Current Stage**: Inception Complete
 - **Next Stage**: Functional Design
 - **Status**: INCEPTION phase complete, ready to proceed to CONSTRUCTION phase
+- **Last Reviewed**: 2026-05-10T15:40:25+09:00
+- **Construction Readiness Notes**: Functional Design must resolve HTML snippet storage limits, DynamoDB-to-S3 Vectors / Knowledge Base synchronization, and concrete Presigned URL request validation.

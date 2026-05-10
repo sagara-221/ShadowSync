@@ -3,12 +3,12 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-09T12:19:00+09:00
-- **Current Stage**: CONSTRUCTION - Functional Design (Waiting for user)
+- **Current Stage**: INCEPTION - Complete (Functional Design Waiting)
 
 ## Workspace State
 - **Existing Code**: No
 - **Reverse Engineering Needed**: No
-- **Workspace Root**: `e:\_MainData\1.Hobby\1.Engineering\Hackathon\AWSSummit\ShadowSync\logger\ss-tool`
+- **Workspace Root**: `/Users/tsubasa/Documents/codex/ShadowSync/logger/ss-tool`
 
 ## Code Location Rules
 - **Application Code**: Workspace root (NEVER in aidlc-docs/)
@@ -47,3 +47,11 @@
 
 ### 🟡 OPERATIONS PHASE
 - [ ] Operations - PLACEHOLDER
+
+## Current Status
+- **Lifecycle Phase**: INCEPTION → CONSTRUCTION
+- **Current Stage**: Application Design Complete
+- **Next Stage**: Functional Design
+- **Status**: INCEPTION phase complete, ready to proceed to Functional Design
+- **Last Reviewed**: 2026-05-10T15:40:25+09:00
+- **Construction Readiness Notes**: Functional Design must reflect the updated data-accumulation Presigned URL flow: ss-tool uses IoT Core Request/Response and uploads images with S3 Presigned URLs before publishing metadata via MQTTS.
