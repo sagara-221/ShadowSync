@@ -102,10 +102,9 @@ ShadowSync
 1. 親AI-DLCで全体Intentを整理する。
 2. 親AI-DLCでユニット分解を行い、子AI-DLCのワークスペースを分ける。
 3. 各子AI-DLCが独立してInceptionを実施する。
-4. 子AI-DLCの成果物から、親AI-DLCの前提と異なる点を洗い出す。
-5. 親AI-DLCのインターフェース文書と進捗文書を子AI-DLCの結果に合わせて更新する。
-6. Inception限定の懸念は解消し、Construction詳細は専用バックログへ分離する。
-7. Constructionでは、各子AI-DLCが自分の責務範囲でFunctional Design、Infrastructure Design、Code Generationへ進む。
+4. 子AI-DLCの成果物を親AI-DLCへフィードバックし、親子間インターフェースを同期する。
+5. Constructionで扱う詳細設計事項を専用バックログへ整理する。
+6. Constructionでは、各子AI-DLCが自分の責務範囲でFunctional Design、Infrastructure Design、Code Generationへ進む。
 
 この流れにより、全体構想を親AI-DLCで保ちつつ、個別ユニットの具体設計は子AI-DLCに委譲できる。
 
@@ -133,31 +132,16 @@ Inceptionの後半で、子AI-DLCの結果を反映して親AI-DLCの想定仕�
 
 ---
 
-## 7. Inception確認と修正結果
+## 7. Constructionで行うこと
 
-子AI-DLCのInception完了後、親AI-DLCの前提と各子AI-DLCの成果物を照合した。
+Inceptionで定義した全体Intent、ユニット境界、親子間インターフェースを前提に、Constructionでは以下を具体化する。
 
-確認結果:
-
-- 要件・責務境界を根本からやり直す重大問題はなかった。
-- 一部文書に旧API Gateway前提やステータス表記の同期漏れがあった。
-- Inceptionで解決すべき問題と、Constructionで扱うべき詳細QAが混在していた。
-
-対応結果:
-
-- digital-twinの一部「レビュー待ち」表記を承認済みに同期した。
-- data-accumulationの旧API Gateway前提を、Lambda Function URL / IoT Core Request/Responseの最終方針へ更新した。
-- logger/ss-toolのS3Uploader説明をIoT Core Request/Response前提へ修正した。
-- 古い検証レポートにはSuperseded注記を追加した。
-- Inception QAを5問へ縮小し、Construction詳細は専用バックログへ分離した。
-
-関連文書:
-
-- [Inception確認レポート](inception-confirmation-report.md)
-- [Inception限定 懸念事項・修正事項レポート](inception-only-concerns-report.md)
-- [Inception解決事項 QAリスト](inception-resolution-qa.md)
-- [Construction設計QAバックログ](construction-design-qa-backlog.md)
-- [Construction準備課題](construction-readiness-issues.md)
+| 領域 | Constructionで行うこと | 詳細 |
+|---|---|---|
+| data-accumulation | 共通スキーマ、DynamoDB/S3設計、Presigned URL、RAG同期方式をFunctional Design / Infrastructure Designで確定する | [Construction設計QAバックログ](construction-design-qa-backlog.md) |
+| logger | data-accumulationの確定スキーマに合わせて、OS API、Chrome、スクリーンショット送信実装を進める | [Constructionで行うこと](construction-readiness-issues.md) |
+| daily-log | DynamoDB読取I/F、日報生成タイミング、Notion出力仕様をFunctional Designで確定する | [Construction設計QAバックログ](construction-design-qa-backlog.md) |
+| digital-twin | RAG検索I/F、根拠表示、会話履歴、認証フローをFunctional Designで確定する | [Construction設計QAバックログ](construction-design-qa-backlog.md) |
 
 ---
 
@@ -188,7 +172,7 @@ Inceptionの後半で、子AI-DLCの結果を反映して親AI-DLCの想定仕�
 | ビジネス意図の明確さ | 「記録・振り返り・報告・検索を人が頑張らない」ことを中核Intentとして定義した |
 | Unit分解の適切さ | Logger、Data Accumulation、Daily Log、Digital Twinへ責務分離し、さらにLoggerは3つの孫ユニットへ分解した |
 | 創造性とテーマ適合性 | 人の活動ログを自動的に集め、日報と自分のデジタルツインへつなげることで、面倒な自己管理を肩代わりする |
-| ドキュメント品質 | 親AI-DLC、子AI-DLC、確認レポート、QA、Constructionバックログを分け、InceptionとConstructionの範囲を明確化した |
+| ドキュメント品質 | 親AI-DLC、子AI-DLC、終了レポート、Constructionバックログを分け、InceptionとConstructionの範囲を明確化した |
 
 ---
 
@@ -196,5 +180,4 @@ Inceptionの後半で、子AI-DLCの結果を反映して親AI-DLCの想定仕�
 
 ShadowSyncの親AI-DLCおよび主要子AI-DLCのInceptionフェーズは完了している。
 
-Inception時点で解決すべき不整合は修正済みであり、残る論点はConstructionのFunctional Design / Infrastructure Designで扱うべき詳細設計である。よって、本プロダクトはInception成果物としてハッカソン提出可能な状態に到達した。
-
+全体Intent、ユニット分解、親子間インターフェース、子AI-DLC成果物への導線が整理済みであり、Constructionで行う詳細設計事項は専用バックログへ整理済みである。よって、本プロダクトはInception成果物としてハッカソン提出可能な状態に到達した。

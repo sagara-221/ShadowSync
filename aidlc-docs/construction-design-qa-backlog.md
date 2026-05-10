@@ -6,6 +6,19 @@
 
 ---
 
+## 0. Inception完了後のConstruction移行タスク
+
+以下はInceptionフェーズの残作業ではなく、Constructionで具体化するためのタスクとして扱う。
+
+| ID | タスク | 扱うステージ |
+|---|---|---|
+| CT-CQ-01 | 親AI-DLCの共通インターフェース文書を参照し、各子AI-DLCのFunctional Design冒頭で送受信スキーマ契約を確定する | Functional Design |
+| CT-CQ-02 | 旧検討履歴や確認メモはConstruction実装判断の参考情報として扱い、提出用Inception成果物の正本には含めない | Construction開始時 |
+| CT-CQ-03 | 子AI-DLCのステータスはInception完了として扱い、以降の詳細検討事項はConstructionタスクとして進捗管理する | Construction開始時 |
+| CT-CQ-04 | Presigned URL、RAG同期、Notion出力、認証フローなどの詳細QAは、本バックログから各子AI-DLCの設計質問へ展開する | Functional / Infrastructure Design |
+
+---
+
 ## 1. data-accumulation向け
 
 | ID | 質問 | 扱うステージ |

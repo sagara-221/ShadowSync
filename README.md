@@ -115,8 +115,8 @@ flowchart TB
 - [Inceptionフェーズ終了レポート](aidlc-docs/inception-completion-report.md)
 - [親AI-DLC 状態管理](aidlc-docs/aidlc-state.md)
 - [子AI-DLC 進捗管理](aidlc-docs/sub-aidlc-progress.md)
-- [Inception確認レポート](aidlc-docs/inception-confirmation-report.md)
-- [Inception限定 懸念事項・修正事項レポート](aidlc-docs/inception-only-concerns-report.md)
+- [Construction設計QAバックログ](aidlc-docs/construction-design-qa-backlog.md)
+- [Constructionで行うこと](aidlc-docs/construction-readiness-issues.md)
 
 ## ドキュメント構成
 

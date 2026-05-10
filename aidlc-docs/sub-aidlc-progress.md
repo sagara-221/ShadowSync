@@ -27,7 +27,7 @@ ShadowSync (親AI-DLC) ── 完了
 | **logger/osapi** | Construction | Code Generation 待ち | 60% | Inception完了、Functional Design完了 |
 | **logger/ss-tool** | Construction | Functional Design 待ち | 40% | Inception完了（Application Design含む） |
 | **logger/chrome-extension** | Construction | Code Generation 待ち | 30% | Inception完了。FD/NFRスキップで直接CGへ |
-| **data-accumulation** | Inception完了 | Functional Design 待ち | 35% | 要件、Workflow、Units Planning/Generation完了。確認レポートで未確定事項を整理 |
+| **data-accumulation** | Inception完了 | Functional Design 待ち | 35% | 要件、Workflow、Units Planning/Generation完了。Construction詳細は専用バックログで管理 |
 | **daily-log** | Inception完了 | Construction開始待ち | 35% | 要件、User Stories、Application Design完了 |
 | **digital-twin** | Inception完了 | Construction開始待ち | 35% | 要件、User Stories、Application Design、Units Generation完了 |
 
@@ -113,7 +113,7 @@ ShadowSync (親AI-DLC) ── 完了
 
 **技術スタック (予定)**: AWS IoT Core, Lambda, Kinesis, S3, DynamoDB, Bedrock, S3 Vectors / Bedrock Knowledge Base
 **依存関係**: logger (osapi, ss-tool, chrome-extension) からのデータを受信する
-**注意事項**: ss-tool向けは IoT Core Request/Response、Chrome拡張向けは Lambda Function URL + Cognito IDプール由来IAM認証でPresigned URLを発行する。Inception確認で旧API Gateway前提とステータス表記は同期済み。
+**注意事項**: ss-tool向けは IoT Core Request/Response、Chrome拡張向けは Lambda Function URL + Cognito IDプール由来IAM認証でPresigned URLを発行する。
 
 ---
 
@@ -186,18 +186,15 @@ logger/chrome-extension┘                        └──▶ digital-twin
 
 ---
 
-## Inception確認レポート
+## Construction準備資料
 
-**作成済み**: `aidlc-docs/inception-confirmation-report.md`
-
-## Construction準備 課題・懸念点整理
-
-**作成済み**: `aidlc-docs/construction-readiness-issues.md`
+- **作成済み**: `aidlc-docs/construction-readiness-issues.md`
+- **作成済み**: `aidlc-docs/construction-design-qa-backlog.md`
 
 ### 確認結果サマリ
 
 - logger各孫AI-DLC、data-accumulation、daily-log、digital-twin のInception成果物を確認済み。
 - 重大なスコープ逸脱はなし。
-- `data-accumulation` はInception完了。HTMLスニペット保存戦略、S3 Vectors/Knowledge Base同期方式が残課題。`aidlc-state.md` の現在ステージは同期済み。
+- `data-accumulation` はInception完了。HTMLスニペット保存戦略、S3 Vectors/Knowledge Base同期方式はConstructionで扱う。
 - `daily-log` はInception完了。Notionプロパティ、対象日ルール、失敗ジョブ再実行方式を後続設計で確定する。
-- `digital-twin` はInception完了。ドキュメントのステータス表記は承認済みに同期済み。RAG検索I/F具体化はConstructionで扱う。
+- `digital-twin` はInception完了。RAG検索I/F具体化はConstructionで扱う。
